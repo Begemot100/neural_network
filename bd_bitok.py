@@ -12,22 +12,13 @@ from telegram import Bot
 import matplotlib.pyplot as plt
 import joblib
 import time
-# import asyncio
 from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.model_selection import StratifiedKFold, cross_validate
 from sklearn.metrics import make_scorer, accuracy_score
-# import scikeras.wrappers
 
-# Замените 'YOUR_BOT_TOKEN' на фактический токен вашего бота в Telegram
-bot_token = ''
 
-# Замените 'YOUR_CHAT_ID' на ваш фактический идентификатор чата в Telegram
-chat_id = ''
-
-# Создайте объект бота
 bot = Bot(token=bot_token)
 
-# message = 'Изменение цены'
 
 def send_telegram_message(message):
     bot.send_message(chat_id=chat_id, text=message)
@@ -108,13 +99,10 @@ def analyze_trend(data):
 
 def calculate_entry_exit_percent(data, current_price, current_trend_prob):
     try:
-        # Преобразуем вероятность в число с плавающей запятой
         current_trend_prob = float(current_trend_prob)
     except ValueError:
-        # В случае ошибки преобразования просто присваиваем 0.0
         current_trend_prob = 0.0
 
-    # Используем порог 0.5 для принятия решения о тренде
     current_trend = 'Up' if current_trend_prob >= 0.5 else 'Down'
 
     if current_trend == 'Up':
@@ -133,7 +121,6 @@ def make_decision(model, data, current_data, interval):
     X_current = preprocess_data_for_nn(current_data)[0]
     current_trend_prob = model.predict(X_current)[0, 0]
 
-    # Оценка по текущему порогу, при котором модель принимает решение 'Up' или 'Down'
     current_trend = 'Up' if current_trend_prob >= 0.5 else 'Down'
     percent_change = calculate_entry_exit_percent(data, current_data['close'].iloc[-1], current_trend)
     calculate_entry_exit_percent(data, current_price, current_trend_prob)
@@ -146,7 +133,6 @@ def make_decision(model, data, current_data, interval):
         send_telegram_message_async(notification_message)
         plot_price_and_forecast(data, percent_change, interval)
 
-        # Установите правила для сигналов
         buy_signal_threshold = 0.05
         sell_signal_threshold = -0.05
 
@@ -165,13 +151,12 @@ def make_decision(model, data, current_data, interval):
 def plot_price_and_forecast(data, percent_change, interval):
     try:
         plt.figure(figsize=(8, 4))
-        data['timestamp'] = pd.to_datetime(data.index)  # Преобразование времени в datetime
+        data['timestamp'] = pd.to_datetime(data.index)  
         plt.plot(data['timestamp'], data['close'], label='Closing Price', color='blue')
         last_timestamp = data['timestamp'].iloc[-1]
         plt.scatter(last_timestamp, data['close'].iloc[-1], color='red', marker='o', label='Last Price')
 
-        # Используем total_seconds(), чтобы получить общее количество секунд
-        forecast_interval_seconds = 3600  # 1 час в секундах
+        forecast_interval_seconds = 3600  
         forecasted_price = data['close'].iloc[-1] * (1 + percent_change / 100)
         forecast_timestamp = last_timestamp + pd.Timedelta(seconds=forecast_interval_seconds)
 
@@ -246,7 +231,6 @@ def make_decision(model, data, current_data, interval):
     current_trend = model.predict(current_data_frame)[0]
     current_price = current_data_frame['close'].iloc[-1]
     percent_change = calculate_entry_exit_percent(data, current_price, current_trend)
-    # notification_message = 'Изменение цены'
     if abs(percent_change) >= 1:
         notification_message = f"Прогноз тренда для таймфрейма {interval}: {current_trend}\nПроцент изменения цены: {percent_change}"
         send_telegram_message(notification_message)
@@ -308,7 +292,6 @@ def train_model_with_cross_validation(data):
 
 
 start_time = time.time()
-            # Ваш код обучения модели
 end_time = time.time()
 elapsed_time = end_time - start_time
 print(f"Время обучения: {elapsed_time:.2f} секунд")
@@ -318,7 +301,7 @@ print(f"Время обучения: {elapsed_time:.2f} секунд")
 if __name__ == "__main__":
     symbol = "BTCUSDT"
     intervals = ["5m", "15m", "1h", "4h", "1d"]
-    limit = 1000  # Binance limit per request
+    limit = 1000  
     previous_trends = {interval: 'Neutral' for interval in intervals}
 
     while True:
@@ -336,8 +319,7 @@ if __name__ == "__main__":
             print(f"Neural Network: Trend for {interval}: {current_trend}")
             print(f"Percent Change: {percent_change} %")
 
-            # previous_trends[interval] = current_trend
-            time.sleep(60)  # Например, обновление каждую минуту
+            time.sleep(60)  
 
 
 
